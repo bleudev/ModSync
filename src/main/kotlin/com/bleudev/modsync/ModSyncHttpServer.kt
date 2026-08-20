@@ -1,0 +1,100 @@
+package com.bleudev.modsync
+
+import com.bleudev.modsync.Modsync.Companion.LOGGER
+import com.sun.net.httpserver.HttpExchange
+import com.sun.net.httpserver.HttpHandler
+import com.sun.net.httpserver.HttpServer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import net.fabricmc.loader.api.FabricLoader
+import java.io.File
+import java.io.IOException
+import java.net.InetSocketAddress
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.exists
+
+class ModSyncHttpServer(private val properties: Properties) {
+    internal fun run() {
+        val mods = arrayListOf<ModCachedData>()
+        for (id in properties.modIds) {
+            FabricLoader.getInstance().getModContainer(id).ifPresent {
+                mods.add(ModCachedData(id, it.metadata.version.friendlyString, it.origin.paths.first().toFile()))
+            }
+        }
+        try {
+            val server = HttpServer.create(InetSocketAddress(properties.port), 0)
+            server.createContext("/", RootHandler(mods.toList()))
+            server.setExecutor(null)
+            server.start()
+            LOGGER.info("Server was started!")
+        } catch (e: IOException) {
+            throw RuntimeException(e)
+        }
+    }
+
+    class RootHandler(private val mods: List<ModCachedData>) : HttpHandler {
+        override fun handle(t: HttpExchange) {
+            val modId = t.requestURI.path.replace("\\?.*".toRegex(), "").substring(1)
+            LOGGER.info("Requested \"$modId\"")
+            if (modId.isEmpty()) {
+                t.textRespond(jsonInstance.encodeToString(ModSyncMetadata(mods.map { ModSyncMetadata.ModMetadata(it.id, it.version) })), 200)
+            } else {
+                val file = mods.find { it.id == modId }?.file
+                if (file == null || !file.exists()) {
+                    t.textRespond("Not found", 404)
+                }
+                else {
+                    t.responseHeaders["Content-Type"] = "application/java-archive"
+                    t.responseHeaders["Content-Disposition"] = "attachment; filename=\"${file.name}\""
+                    t.sendResponseHeaders(200, file.length())
+                    t.responseBody.use { os ->
+                        Files.copy(file.toPath(), os)
+                    }
+                }
+            }
+        }
+
+        private fun HttpExchange.textRespond(response: String, code: Int) {
+            val responseBytes = response.toByteArray(StandardCharsets.UTF_8)
+            responseHeaders["Content-Type"] = "text/html; charset=UTF-8"
+            sendResponseHeaders(code, responseBytes.size.toLong())
+            responseBody.use { it.write(responseBytes) }
+        }
+    }
+
+    data class ModCachedData(val id: String, val version: String, val file: File)
+
+    @Serializable
+    data class ModSyncMetadata(val mods: List<ModMetadata>) {
+        @Serializable
+        data class ModMetadata(val id: String, val version: String)
+    }
+    @Serializable
+    data class Properties(val port: Int = 8000, val modIds: List<String> = listOf()) {
+        companion object {
+            fun fromFile(path: Path): Properties {
+                try {
+                    if (!path.exists()){
+                        Files.createDirectories(path.parent)
+                        Files.writeString(path, jsonInstance.encodeToString(Properties()))
+                    }
+                } catch (e: Throwable) {
+                    LOGGER.error("Error while init properties: $e")
+                }
+                val s1 = Files.readString(path)
+                val prop = jsonInstance.decodeFromString<Properties>(s1)
+                val s2 = jsonInstance.encodeToString(prop)
+                if (s1 != s2) {
+                    Files.writeString(path, s2)
+                }
+                return prop
+            }
+        }
+    }
+
+    companion object {
+        private val jsonInstance: Json = Json { prettyPrint = true; encodeDefaults = true }
+    }
+}
