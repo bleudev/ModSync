@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "modsync",
+  "version": "${version}",
+  "name": "ModSync",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/modsync/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "com.bleudev.modsync.client.ModsyncDataGenerator"
+    ],
+    "client": [
+      "com.bleudev.modsync.client.ModsyncClient"
+    ],
+    "main": [
+      "com.bleudev.modsync.Modsync"
+    ]
+  },
+  "mixins": [
+    "modsync.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric-api": "*",
+    "minecraft": ">=26.3-alpha.8"
+  }
+}
