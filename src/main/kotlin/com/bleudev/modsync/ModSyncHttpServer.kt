@@ -1,14 +1,14 @@
 package com.bleudev.modsync
 
-import com.bleudev.modsync.Modsync.Companion.LOGGER
+import com.bleudev.modsync.ModSync.Companion.JSON
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import net.fabricmc.loader.api.FabricLoader
 import java.io.File
 import java.io.IOException
+import java.net.BindException
 import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -29,8 +29,11 @@ class ModSyncHttpServer(private val properties: Properties) {
             server.setExecutor(null)
             server.start()
             LOGGER.info("Server was started!")
-        } catch (e: IOException) {
-            throw RuntimeException(e)
+        }
+        catch (e: IOException) {
+            if (e !is BindException) { // Do not start server if running
+                throw RuntimeException(e)
+            }
         }
     }
 
@@ -39,7 +42,7 @@ class ModSyncHttpServer(private val properties: Properties) {
             val modId = t.requestURI.path.replace("\\?.*".toRegex(), "").substring(1)
             LOGGER.info("Requested \"$modId\"")
             if (modId.isEmpty()) {
-                t.textRespond(jsonInstance.encodeToString(ModSyncMetadata(mods.map { ModSyncMetadata.ModMetadata(it.id, it.version) })), 200)
+                t.textRespond(JSON.encodeToString(ModSyncMetadata(mods.map { ModSyncMetadata.ModMetadata(it.id, it.version) })), 200)
             } else {
                 val file = mods.find { it.id == modId }?.file
                 if (file == null || !file.exists()) {
@@ -78,23 +81,19 @@ class ModSyncHttpServer(private val properties: Properties) {
                 try {
                     if (!path.exists()){
                         Files.createDirectories(path.parent)
-                        Files.writeString(path, jsonInstance.encodeToString(Properties()))
+                        Files.writeString(path, JSON.encodeToString(Properties()))
                     }
                 } catch (e: Throwable) {
                     LOGGER.error("Error while init properties: $e")
                 }
                 val s1 = Files.readString(path)
-                val prop = jsonInstance.decodeFromString<Properties>(s1)
-                val s2 = jsonInstance.encodeToString(prop)
+                val prop = JSON.decodeFromString<Properties>(s1)
+                val s2 = JSON.encodeToString(prop)
                 if (s1 != s2) {
                     Files.writeString(path, s2)
                 }
                 return prop
             }
         }
-    }
-
-    companion object {
-        private val jsonInstance: Json = Json { prettyPrint = true; encodeDefaults = true }
     }
 }

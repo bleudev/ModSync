@@ -17,7 +17,7 @@
       "com.bleudev.modsync.client.ModsyncClient"
     ],
     "main": [
-      "com.bleudev.modsync.Modsync"
+      "com.bleudev.modsync.ModSync"
     ]
   },
   "mixins": [
