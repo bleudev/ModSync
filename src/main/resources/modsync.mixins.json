@@ -4,8 +4,11 @@
   "package": "com.bleudev.modsync.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "fabric.RegistrySyncManagerMixin",
+    "fabric.RegistrySyncManagerMixin$SyncConfigurationTaskMixin"
   ],
   "client": [
+    "client.ConnectScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

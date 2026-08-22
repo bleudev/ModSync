@@ -77,6 +77,7 @@ class ModSyncHttpServer(private val properties: Properties) {
     @Serializable
     data class Properties(val port: Int = 8000, val modIds: List<String> = listOf()) {
         companion object {
+            @JvmStatic
             fun fromFile(path: Path): Properties {
                 try {
                     if (!path.exists()){

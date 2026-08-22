@@ -2,7 +2,6 @@ package com.bleudev.modsync.client.util
 
 import com.bleudev.modsync.ModSync.Companion.JSON
 import com.bleudev.modsync.ModSyncHttpServer
-import net.fabricmc.loader.api.FabricLoader
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -13,7 +12,7 @@ class ClientHttpHelper(val fullAddress: String) {
     private fun <T> get(endpoint: String, bodyHandler: HttpResponse.BodyHandler<T>): HttpResponse<T> {
         HttpClient.newHttpClient().use { client ->
             val request = HttpRequest.newBuilder()
-                .uri(URI.create("http://$fullAddress$endpoint"))
+                .uri(URI.create("$fullAddress$endpoint"))
                 .GET()
                 .build()
             return client.send(request, bodyHandler)

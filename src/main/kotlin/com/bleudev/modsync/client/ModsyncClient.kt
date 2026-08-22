@@ -3,36 +3,40 @@ package com.bleudev.modsync.client
 import com.bleudev.modsync.client.util.ModSyncer
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.screens.ConfirmScreen
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
+import net.minecraft.client.gui.screens.GenericWaitingScreen
 import net.minecraft.network.chat.Component
 
 class ModsyncClient : ClientModInitializer {
+    private var updateAddress: String = ""
+    private var toUpdate: List<Pair<String, String>> = listOf()
+
     override fun onInitializeClient() {
         ClientStorageManager.getInstance().init()
-        ClientPlayNetworking.registerGlobalReceiver(ModSyncInfo.TYPE) { payload, ctx ->
-            val split = ctx.client().currentServer?.ip?.split(":") ?: return@registerGlobalReceiver
-            val address = split.subList(0, split.size-1).joinToString(":")
+        ClientConfigurationNetworking.registerGlobalReceiver(ModSyncInfo.TYPE) { payload, _ ->
+            println("GOT PACKET")
+            val host = ClientTempStorageManager.getInstance().serverHost ?: return@registerGlobalReceiver
+            updateAddress = "http://$host:${payload.port}"
+            println("CURRENT SERVER $updateAddress")
+            toUpdate = ModSyncer.getInstance().fetch(updateAddress)
+            println("TO UPDATE $toUpdate")
 
-            val p = ClientStorageManager.getInstance().load()?.servers[address]?.port ?: -1
-            if (p != payload.port) {
-                val s = ClientStorageManager.getInstance().load() ?: return@registerGlobalReceiver
-                s.modify(address) {
-                    it.port = payload.port
-                    it
+        }
+        ClientTickEvents.END_CLIENT_TICK.register { mc ->
+            if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty()) {
+                mc.disconnect(GenericWaitingScreen.createWaitingWithoutButton(
+                    Component.literal("Update mods"),
+                    Component.literal("Please wait")
+                ), true)
+                for ((id, version) in toUpdate) {
+                    ModSyncer.getInstance().sync(updateAddress, id, version)
+                    println("SYNC $id $version")
                 }
-                s.save()
-            }
-            if (ModSyncer.getInstance().trySync(address)) {
-                ctx.responseSender().disconnect(Component.literal("Updating mods."))
-                Minecraft.getInstance().gui.setScreen(ConfirmScreen(
-                    { if (it) Minecraft.getInstance().close() },
-                    Component.literal("Finished"),
-                    Component.literal("Restart the game?"),
-                    Component.literal("Yes"),
-                    Component.literal("No"),
-                ))
+                toUpdate = listOf()
+                updateAddress = ""
+                println("FINISH")
+                mc.exitWorldAndClose()
             }
         }
     }

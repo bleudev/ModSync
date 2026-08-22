@@ -1,6 +1,5 @@
 package com.bleudev.modsync.client.util
 
-import com.bleudev.modsync.client.ClientStorageManager
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.Version
@@ -10,28 +9,24 @@ import java.nio.file.Path
 import kotlin.jvm.optionals.getOrNull
 
 class ModSyncer private constructor(private val modsDir: Path) {
-    private fun httpHelper(address: String): ClientHttpHelper? =
-        ClientHttpHelper("$address:${ClientStorageManager.getInstance().load()?.servers[address]?.port ?: return null}")
-
-    fun trySync(address: String): Boolean {
-        val h = httpHelper(address) ?: return false
+    fun fetch(address: String): List<Pair<String, String>> {
+        val h = ClientHttpHelper(address)
         val mods = h.metadata().mods
-        var bl = false
+        val ans = arrayListOf<Pair<String, String>>()
         for ((id, version) in mods) {
             val current = FabricLoader.getInstance().getModContainer(id)
                 .map(ModContainer::getMetadata)
                 .map(ModMetadata::getVersion)
                 .getOrNull()
             if (current == null || current < Version.parse(version)) {
-                sync(address, id, version)
-                bl = true
+                ans.add(id to version)
             }
         }
-        return bl
+        return ans.toList()
     }
 
-    private fun sync(address: String, id: String, version: String): Boolean {
-        val h = httpHelper(address) ?: return false
+    fun sync(address: String, id: String, version: String): Boolean {
+        val h = ClientHttpHelper(address)
         FabricLoader.getInstance().getModContainer(id).ifPresent {
             for (path in it.origin.paths) {
                 Files.deleteIfExists(path)

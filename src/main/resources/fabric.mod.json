@@ -13,6 +13,9 @@
     "fabric-datagen": [
       "com.bleudev.modsync.client.ModsyncDataGenerator"
     ],
+    "server": [
+      "com.bleudev.modsync.server.ModSyncServer"
+    ],
     "client": [
       "com.bleudev.modsync.client.ModsyncClient"
     ],
