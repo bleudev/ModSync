@@ -16,6 +16,8 @@ class ModSyncDefaultLanguageProvider(
         builder.add("modsync.update.wait.running.wait", "Please wait")
         builder.add("modsync.update.end.restart", "Restart Minecraft")
         builder.add("modsync.update.end.restart.more", "To connect to this server you need to restart the game")
+        builder.add("modsync.update.end.restart.yes", "Restart")
+        builder.add("modsync.update.end.restart.no", "Later")
     }
 }
 
@@ -30,5 +32,7 @@ class ModSyncRuLanguageProvider(
         builder.add("modsync.update.wait.running.wait", "Пожалуйста подождите")
         builder.add("modsync.update.end.restart", "Перезапустите Minecraft")
         builder.add("modsync.update.end.restart.more", "Чтобы присоединиться к этому серверу необходимо перезапустить игру")
+        builder.add("modsync.update.end.restart.yes", "Перезапустить")
+        builder.add("modsync.update.end.restart.no", "Потом")
     }
 }

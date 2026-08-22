@@ -72,7 +72,9 @@ class ModSyncClient : ClientModInitializer {
                 }
             },
             Component.translatable("modsync.update.end.restart"),
-            Component.translatable("modsync.update.end.restart.more")
+            Component.translatable("modsync.update.end.restart.more"),
+            Component.translatable("modsync.update.end.restart.yes"),
+            Component.translatable("modsync.update.end.restart.no")
         ))
     }
 }
