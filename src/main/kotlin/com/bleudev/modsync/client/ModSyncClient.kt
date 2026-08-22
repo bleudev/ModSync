@@ -3,6 +3,7 @@ package com.bleudev.modsync.client
 import com.bleudev.modsync.ModSyncHttpServer
 import com.bleudev.modsync.client.util.ModSyncer
 import com.bleudev.modsync.client.util.cancel
+import com.bleudev.modsync.client.util.closeScreen
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -21,7 +22,6 @@ class ModSyncClient : ClientModInitializer {
     private var updateAddress: String = ""
     private var toUpdate: List<ModSyncHttpServer.ModSyncMetadata.ModMetadata> = listOf()
     private var updating: Boolean = false
-    private var shouldShowRestartScreen: Boolean = false
 
     override fun onInitializeClient() {
         ClientConfigurationNetworking.registerGlobalReceiver(ModSyncInfo.TYPE) { payload, _ ->
@@ -30,11 +30,6 @@ class ModSyncClient : ClientModInitializer {
             toUpdate = ModSyncer.getInstance().fetch(updateAddress)
         }
         ClientTickEvents.END_CLIENT_TICK.register { mc ->
-            if (shouldShowRestartScreen) {
-                shouldShowRestartScreen = false
-                mc.showRestartScreen()
-            }
-
             val already = ClientTempStorageManager.getInstance().serverAddress in requireRestartAddresses
             if (!updating) {
                 if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty() && !already) {
@@ -68,28 +63,29 @@ class ModSyncClient : ClientModInitializer {
         }
         return ConfirmScreen(
             {
+                val mc = Minecraft.getInstance()
                 if (it) {
                     val already = ClientTempStorageManager.getInstance().serverAddress in requireRestartAddresses
                     if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty() && !already) {
                         ClientTempStorageManager.getInstance().serverAddress?.let { a -> requireRestartAddresses.add(a) }
-                        Minecraft.getInstance().gui.setScreen(updatingScreen())
+                        mc.gui.setScreen(updatingScreen())
                         Thread {
                             for (data in toUpdate) {
                                 ModSyncer.getInstance().sync(updateAddress, data)
                             }
                             toUpdate = listOf()
                             updateAddress = ""
-                            shouldShowRestartScreen = true
+                            mc.execute { mc.showRestartScreen() }
                             updating = false
                         }.start()
                     } else {
-                        Minecraft.getInstance().gui.setScreen(null)
+                        mc.closeScreen()
                     }
                 } else {
                     toUpdate = listOf()
                     updateAddress = ""
                     updating = false
-                    Minecraft.getInstance().gui.setScreen(null)
+                    mc.closeScreen()
                 }
             },
             Component.translatable("modsync.update.approve.title"),
