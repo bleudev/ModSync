@@ -19,5 +19,9 @@ hs_err_pid*
 
 # Common working directory
 run
+
 # Data gen
 generated
+
+# Env
+.env
