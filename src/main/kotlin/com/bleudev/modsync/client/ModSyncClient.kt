@@ -5,6 +5,8 @@ import com.bleudev.modsync.custom.packet.payload.ModSyncInfo
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
+import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ConfirmScreen
 import net.minecraft.client.gui.screens.ConnectScreen
@@ -44,38 +46,50 @@ class ModSyncClient : ClientModInitializer {
         }
     }
 
-    private fun approveUpdateScreen(): ConfirmScreen = ConfirmScreen(
-        {
-            println("EXECUTE $it")
-            if (it) {
-                val already = ClientTempStorageManager.getInstance().serverAddress in requireRestartAddresses
-                if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty() && !already) {
-                    ClientTempStorageManager.getInstance().serverAddress?.let { a -> requireRestartAddresses.add(a) }
-                    Minecraft.getInstance().gui.setScreen(updatingScreen())
-                    Thread {
-                        for ((id, version) in toUpdate) {
-                            ModSyncer.getInstance().sync(updateAddress, id, version)
-                        }
-                        toUpdate = listOf()
-                        updateAddress = ""
-                        shouldShowRestartScreen = true
-                        updating = false
-                    }.start()
+    private fun approveUpdateScreen(): ConfirmScreen {
+        val message = Component.translatable("modsync.update.approve.message")
+        for ((id, version) in toUpdate) {
+            val container = FabricLoader.getInstance().getModContainer(id)
+
+            if (container.isPresent) {
+                val current = container.get().metadata.version.friendlyString
+                message.append(Component.literal("\n$id: $current -> $version").withStyle(ChatFormatting.GREEN))
+            } else {
+                message.append(Component.literal("\n$id: $version").withStyle(ChatFormatting.AQUA))
+            }
+        }
+        return ConfirmScreen(
+            {
+                if (it) {
+                    val already = ClientTempStorageManager.getInstance().serverAddress in requireRestartAddresses
+                    if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty() && !already) {
+                        ClientTempStorageManager.getInstance().serverAddress?.let { a -> requireRestartAddresses.add(a) }
+                        Minecraft.getInstance().gui.setScreen(updatingScreen())
+                        Thread {
+                            for ((id, version) in toUpdate) {
+                                ModSyncer.getInstance().sync(updateAddress, id, version)
+                            }
+                            toUpdate = listOf()
+                            updateAddress = ""
+                            shouldShowRestartScreen = true
+                            updating = false
+                        }.start()
+                    } else {
+                        Minecraft.getInstance().gui.setScreen(null)
+                    }
                 } else {
+                    toUpdate = listOf()
+                    updateAddress = ""
+                    updating = false
                     Minecraft.getInstance().gui.setScreen(null)
                 }
-            } else {
-                toUpdate = listOf()
-                updateAddress = ""
-                updating = false
-                Minecraft.getInstance().gui.setScreen(null)
-            }
-        },
-        Component.literal("Approve updates"),
-        Component.literal("These mods will be updated"), // WIP
-        Component.literal("Approve"),
-        Component.literal("Do not")
-    )
+            },
+            Component.translatable("modsync.update.approve.title"),
+            message,
+            Component.translatable("modsync.update.approve.yes"),
+            Component.translatable("modsync.update.approve.no")
+        )
+    }
 
     private fun updatingScreen(): GenericWaitingScreen = GenericWaitingScreen.createWaitingWithoutButton(
         Component.translatable("modsync.update.wait.running"),

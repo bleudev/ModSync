@@ -12,6 +12,10 @@ class ModSyncDefaultLanguageProvider(
         registryLookup: HolderLookup.Provider,
         builder: TranslationBuilder
     ) {
+        builder.add("modsync.update.approve.title", "Approve installation")
+        builder.add("modsync.update.approve.message", "These mods will be updated\nAre you sure to install them?")
+        builder.add("modsync.update.approve.yes", "Approve, join the server")
+        builder.add("modsync.update.approve.no", "No, don't join the server")
         builder.add("modsync.update.wait.running", "Updating mods")
         builder.add("modsync.update.wait.running.wait", "Please wait")
         builder.add("modsync.update.end.restart", "Restart Minecraft")
@@ -28,6 +32,10 @@ class ModSyncRuLanguageProvider(
         registryLookup: HolderLookup.Provider,
         builder: TranslationBuilder
     ) {
+        builder.add("modsync.update.approve.title", "Подтвердите установку")
+        builder.add("modsync.update.approve.message", "Эти моды будут обновлены\nВы точно хотите их установить?")
+        builder.add("modsync.update.approve.yes", "Подтвердить, зайти на сервер")
+        builder.add("modsync.update.approve.no", "Нет, не заходить на сервер")
         builder.add("modsync.update.wait.running", "Обновление модов")
         builder.add("modsync.update.wait.running.wait", "Пожалуйста подождите")
         builder.add("modsync.update.end.restart", "Перезапустите Minecraft")
