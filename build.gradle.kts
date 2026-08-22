@@ -1,104 +1,55 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+@file:Suppress("unused")
 
 plugins {
     kotlin("jvm") version "2.4.10"
     kotlin("plugin.serialization") version "2.4.10"
-    id("net.fabricmc.fabric-loom") version "1.17.19"
+    id("fabric-loom") version "1.17.9" apply false
+    id("com.modrinth.minotaur") version "2.9.0" apply false
     id("maven-publish")
 }
 
-version = project.property("mod_version") as String
-group = project.property("maven_group") as String
-
-base {
-    archivesName.set(project.property("archives_base_name") as String)
-}
-
-val targetJavaVersion = 25
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-}
-
-
-fabricApi {
-    configureDataGeneration {
-        client = true
-    }
-}
-
 repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
     mavenCentral()
 }
 
-dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-    implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
-    implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+private val changelog = project.file("CHANGELOG.md").readText()
+private val readme = project.file("README.md").readText()
 
-    implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-}
-
-tasks.processResources {
-    inputs.property("version", project.version)
-    inputs.property("minecraft_version", project.property("minecraft_version"))
-    inputs.property("loader_version", project.property("loader_version"))
-    filteringCharset = "UTF-8"
-
-    filesMatching("fabric.mod.json") {
-        expand(
-            "version" to project.version,
-            "minecraft_version" to project.property("minecraft_version")!!,
-            "loader_version" to project.property("loader_version")!!,
-            "kotlin_loader_version" to project.property("kotlin_loader_version")!!
-        )
+private data class McInformation(val base: String, val dependency: String, val fabricModJson: String) {
+    companion object {
+        fun snapshot(v: String, num: Int): McInformation = McInformation(v, "$v-snapshot-$num", "$v-alpha.$num")
+        fun pre(v: String, num: Int): McInformation = McInformation(v, "$v-pre-$num", "$v-pre.$num")
+        fun rc(v: String, num: Int): McInformation = McInformation(v, "$v-rc-$num", "$v-rc.$num")
+        fun release(v: String): McInformation = McInformation(v, v, v)
     }
 }
-
-tasks.withType<JavaCompile>().configureEach {
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    // If Javadoc is generated, this must be specified in that task too.
-    options.encoding = "UTF-8"
-    options.release.set(targetJavaVersion)
+private data class Deps(val dFabric: String? = null, val dYacl: String? = null, val dModMenu: String? = null) {
+    fun fabric(new: String): Deps = Deps(new, dYacl, dModMenu)
+    fun yacl(new: String): Deps = Deps(dFabric, new, dModMenu)
+    fun modmenu(new: String): Deps = Deps(dFabric, dYacl, new)
 }
+private fun d() = Deps()
 
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
-}
+private fun prConfigure(mcInfo: McInformation, maxExclusiveVersion: String, deps: Deps) {
+    project(":${mcInfo.base}") {
+        extensions.extraProperties.apply {
+            set("mc_version", mcInfo.dependency)
+            set("min_mc_version", mcInfo.fabricModJson)
+            set("max_exc_version", maxExclusiveVersion)
+            set("mod_version", "${project.findProperty("general_version")}+${mcInfo.base}")
+            set("changelog", changelog)
+            set("readme", readme)
 
-tasks.jar {
-    from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}" }
-    }
-}
-
-// configure the maven publication
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            artifactId = project.property("archives_base_name") as String
-            from(components["java"])
+            if (deps.dFabric != null) set("fabric_version", deps.dFabric)
+            if (deps.dYacl != null) set("yacl_version", deps.dYacl)
+            if (deps.dModMenu != null) set("modmenu_version", deps.dModMenu)
         }
     }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
-    }
 }
+private fun prConfigure(v: String, maxExv: String, deps: Deps) = prConfigure(McInformation.release(v), maxExv, deps)
+
+private fun String.snapshot(num: Int): McInformation = McInformation.snapshot(this, num)
+private fun String.pre(num: Int): McInformation = McInformation.pre(this, num)
+private fun String.rc(num: Int): McInformation = McInformation.rc(this, num)
+
+prConfigure("26.3".snapshot(9), "26.4", d().fabric("0.158.0+26.3").yacl("3.9.6+26.3-fabric").modmenu("21.0.0-alpha.1"))

@@ -43,7 +43,8 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric-language-kotlin": ">=${kotlin_loader_version}",
-    "fabric-api": "*",
-    "minecraft": ">=26.3-alpha.8"
+    "fabric-api": ">=${fabric_version}",
+    "minecraft": ">=${min_mc_version} <${max_exc_version}",
+    "yet_another_config_lib_v3": ">=${yacl_version}"
   }
 }

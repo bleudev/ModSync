@@ -6,3 +6,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+include(":26.3")
