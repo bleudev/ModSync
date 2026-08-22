@@ -4,6 +4,7 @@ import com.bleudev.modsync.ModSync.Companion.JSON
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.fabricmc.loader.api.FabricLoader
 import java.io.File
@@ -77,7 +78,11 @@ class ModSyncHttpServer(private val properties: Properties) {
         data class ModMetadata(val id: String, val version: String, val fileName: String)
     }
     @Serializable
-    data class Properties(val port: Int = 8000, val modIds: List<String> = listOf()) {
+    data class Properties(
+        val port: Int = 8000,
+        @SerialName("mod_ids") val modIds: List<String> = listOf(),
+        @SerialName("require_modsync_to_join") val requireModsyncToJoin: Boolean = false
+    ) {
         companion object {
             @JvmStatic
             fun fromFile(path: Path): Properties {

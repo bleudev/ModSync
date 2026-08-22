@@ -5,6 +5,7 @@ import com.bleudev.modsync.custom.ModSyncPackets;
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.impl.registry.sync.RegistrySyncManager;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import org.spongepowered.asm.mixin.Final;
@@ -23,11 +24,14 @@ public class RegistrySyncManager$SyncConfigurationTaskMixin {
     @Final
     private ServerConfigurationPacketListenerImpl handler;
 
-    @Inject(method = "start", at = @At("HEAD"))
+    @Inject(method = "start", at = @At("HEAD"), cancellable = true)
     private void modSync(Consumer<Packet<?>> sender, CallbackInfo ci) {
+        ModSyncHttpServer.Properties properties = ModSyncHttpServer.Properties.fromDefaultFile();
         if (ServerConfigurationNetworking.canSend(handler, ModSyncPackets.MOD_SYNC_INFO)) {
-            ModSyncHttpServer.Properties properties = ModSyncHttpServer.Properties.fromDefaultFile();
             sender.accept(ServerConfigurationNetworking.createClientboundPacket(new ModSyncInfo(properties.getPort())));
+        } else if (properties.getRequireModsyncToJoin()) {
+            ci.cancel();
+            handler.disconnect(Component.literal("ModSync is not installed!"));
         }
     }
 }
