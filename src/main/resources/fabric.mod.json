@@ -3,11 +3,25 @@
   "id": "modsync",
   "version": "${version}",
   "name": "ModSync",
-  "description": "",
-  "authors": [],
-  "contact": {},
+  "description": "A mod that automatically synchronizes Client and Server mods upon connection.",
+  "authors": [
+    "bleudev"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/modsyncer",
+    "sources": "https://github.com/bleudev/ModSync.git",
+    "issues": "https://github.com/bleudev/ModSync/issues"
+  },
   "license": "All-Rights-Reserved",
   "icon": "assets/modsync/icon.png",
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.modrinth": "https://modrinth.com/mod/modsyncer"
+      },
+      "update_checker": true
+    }
+  },
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
