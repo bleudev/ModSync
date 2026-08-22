@@ -95,6 +95,10 @@ class ModSyncHttpServer(private val properties: Properties) {
                 }
                 return prop
             }
+            @JvmStatic
+            fun fromDefaultFile(): Properties = fromFile(
+                FabricLoader.getInstance().configDir.resolve(MOD_ID).resolve("server.config.json")
+            )
         }
     }
 }

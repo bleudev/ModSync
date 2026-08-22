@@ -11,13 +11,13 @@
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
-      "com.bleudev.modsync.client.ModsyncDataGenerator"
+      "com.bleudev.modsync.datagen.ModSyncDataGen"
     ],
     "server": [
       "com.bleudev.modsync.server.ModSyncServer"
     ],
     "client": [
-      "com.bleudev.modsync.client.ModsyncClient"
+      "com.bleudev.modsync.client.ModSyncClient"
     ],
     "main": [
       "com.bleudev.modsync.ModSync"
