@@ -1,5 +1,6 @@
 package com.bleudev.modsync.client
 
+import com.bleudev.modsync.ModSyncHttpServer
 import com.bleudev.modsync.client.util.ModSyncer
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo
 import net.fabricmc.api.ClientModInitializer
@@ -17,7 +18,7 @@ class ModSyncClient : ClientModInitializer {
     private val requireRestartAddresses = arrayListOf<String>()
 
     private var updateAddress: String = ""
-    private var toUpdate: List<Pair<String, String>> = listOf()
+    private var toUpdate: List<ModSyncHttpServer.ModSyncMetadata.ModMetadata> = listOf()
     private var updating: Boolean = false
     private var shouldShowRestartScreen: Boolean = false
 
@@ -66,8 +67,8 @@ class ModSyncClient : ClientModInitializer {
                         ClientTempStorageManager.getInstance().serverAddress?.let { a -> requireRestartAddresses.add(a) }
                         Minecraft.getInstance().gui.setScreen(updatingScreen())
                         Thread {
-                            for ((id, version) in toUpdate) {
-                                ModSyncer.getInstance().sync(updateAddress, id, version)
+                            for (data in toUpdate) {
+                                ModSyncer.getInstance().sync(updateAddress, data)
                             }
                             toUpdate = listOf()
                             updateAddress = ""

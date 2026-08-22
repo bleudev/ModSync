@@ -8,7 +8,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 
-val LOGGER: Logger = LoggerFactory.getLogger("ModSync")
+val LOGGER_GENERAL: Logger = LoggerFactory.getLogger("ModSync")
+val LOGGER_REQUEST: Logger = LoggerFactory.getLogger("ModSync/request")
 const val MOD_ID = "modsync"
 fun resolveIdentifier(path: String) : Identifier = Identifier.fromNamespaceAndPath(MOD_ID, path)
 

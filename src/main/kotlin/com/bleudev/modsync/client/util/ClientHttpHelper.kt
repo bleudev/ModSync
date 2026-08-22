@@ -24,6 +24,6 @@ class ClientHttpHelper(val fullAddress: String) {
 
     internal fun metadata(): ModSyncHttpServer.ModSyncMetadata = JSON
         .decodeFromString<ModSyncHttpServer.ModSyncMetadata>(getString("/"))
-    internal fun mod(modsDir: Path, id: String, version: String) =
-        getFile("/$id", modsDir.resolve("$id-$version.jar"))
+    internal fun mod(modsDir: Path, data: ModSyncHttpServer.ModSyncMetadata.ModMetadata) =
+        getFile("/${data.id}", modsDir.resolve(data.fileName))
 }

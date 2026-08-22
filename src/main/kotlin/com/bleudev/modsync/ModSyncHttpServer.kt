@@ -28,7 +28,7 @@ class ModSyncHttpServer(private val properties: Properties) {
             server.createContext("/", RootHandler(mods.toList()))
             server.setExecutor(null)
             server.start()
-            LOGGER.info("Server was started!")
+            LOGGER_GENERAL.info("Server was started!")
         }
         catch (e: IOException) {
             if (e !is BindException) { // Do not start server if running
@@ -40,9 +40,11 @@ class ModSyncHttpServer(private val properties: Properties) {
     class RootHandler(private val mods: List<ModCachedData>) : HttpHandler {
         override fun handle(t: HttpExchange) {
             val modId = t.requestURI.path.replace("\\?.*".toRegex(), "").substring(1)
-            LOGGER.info("Requested \"$modId\"")
+            LOGGER_REQUEST.info("${t.requestMethod} /$modId")
             if (modId.isEmpty()) {
-                t.textRespond(JSON.encodeToString(ModSyncMetadata(mods.map { ModSyncMetadata.ModMetadata(it.id, it.version) })), 200)
+                t.textRespond(JSON.encodeToString(
+                    ModSyncMetadata(mods.map { ModSyncMetadata.ModMetadata(it.id, it.version, it.file.name) }),
+                ), 200, "application/json")
             } else {
                 val file = mods.find { it.id == modId }?.file
                 if (file == null || !file.exists()) {
@@ -59,9 +61,9 @@ class ModSyncHttpServer(private val properties: Properties) {
             }
         }
 
-        private fun HttpExchange.textRespond(response: String, code: Int) {
+        private fun HttpExchange.textRespond(response: String, code: Int, contentType: String = "text/html") {
             val responseBytes = response.toByteArray(StandardCharsets.UTF_8)
-            responseHeaders["Content-Type"] = "text/html; charset=UTF-8"
+            responseHeaders["Content-Type"] = "$contentType; charset=UTF-8"
             sendResponseHeaders(code, responseBytes.size.toLong())
             responseBody.use { it.write(responseBytes) }
         }
@@ -72,7 +74,7 @@ class ModSyncHttpServer(private val properties: Properties) {
     @Serializable
     data class ModSyncMetadata(val mods: List<ModMetadata>) {
         @Serializable
-        data class ModMetadata(val id: String, val version: String)
+        data class ModMetadata(val id: String, val version: String, val fileName: String)
     }
     @Serializable
     data class Properties(val port: Int = 8000, val modIds: List<String> = listOf()) {
@@ -85,7 +87,7 @@ class ModSyncHttpServer(private val properties: Properties) {
                         Files.writeString(path, JSON.encodeToString(Properties()))
                     }
                 } catch (e: Throwable) {
-                    LOGGER.error("Error while init properties: $e")
+                    LOGGER_GENERAL.error("Error while initialization properties file: $e")
                 }
                 val s1 = Files.readString(path)
                 val prop = JSON.decodeFromString<Properties>(s1)
