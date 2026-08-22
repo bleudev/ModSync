@@ -2,6 +2,7 @@ package com.bleudev.modsync.client
 
 import com.bleudev.modsync.ModSyncHttpServer
 import com.bleudev.modsync.client.util.ModSyncer
+import com.bleudev.modsync.client.util.cancel
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -38,13 +39,19 @@ class ModSyncClient : ClientModInitializer {
             if (!updating) {
                 if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty() && !already) {
                     updating = true
+                    mc.ensureCancelConnect()
                     mc.disconnect(approveUpdateScreen(), true)
                 }
                 if (mc.gui.screen() is ConnectScreen && already) {
+                    mc.ensureCancelConnect()
                     mc.showRestartScreen()
                 }
             }
         }
+    }
+
+    private fun Minecraft.ensureCancelConnect() {
+        (this.gui.screen() as? ConnectScreen)?.cancel()
     }
 
     private fun approveUpdateScreen(): ConfirmScreen {
