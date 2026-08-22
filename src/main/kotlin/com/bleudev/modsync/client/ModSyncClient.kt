@@ -35,7 +35,7 @@ class ModSyncClient : ClientModInitializer {
                 if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty() && !already) {
                     updating = true
                     mc.ensureCancelConnect()
-                    mc.disconnect(approveUpdateScreen(), true)
+                    mc.disconnect(confirmUpdateScreen(), true)
                 }
                 if (mc.gui.screen() is ConnectScreen && already) {
                     mc.ensureCancelConnect()
@@ -49,8 +49,8 @@ class ModSyncClient : ClientModInitializer {
         (this.gui.screen() as? ConnectScreen)?.cancel()
     }
 
-    private fun approveUpdateScreen(): ConfirmScreen {
-        val message = Component.translatable("modsync.update.approve.message")
+    private fun confirmUpdateScreen(): ConfirmScreen {
+        val message = Component.translatable("modsync.update.confirm.message")
         for ((id, version) in toUpdate) {
             val container = FabricLoader.getInstance().getModContainer(id)
 
@@ -88,10 +88,10 @@ class ModSyncClient : ClientModInitializer {
                     mc.closeScreen()
                 }
             },
-            Component.translatable("modsync.update.approve.title"),
+            Component.translatable("modsync.update.confirm.title"),
             message,
-            Component.translatable("modsync.update.approve.yes"),
-            Component.translatable("modsync.update.approve.no")
+            Component.translatable("modsync.update.confirm.yes"),
+            Component.translatable("modsync.update.confirm.no")
         )
     }
 
