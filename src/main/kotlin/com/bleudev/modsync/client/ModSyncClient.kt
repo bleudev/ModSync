@@ -2,9 +2,6 @@ package com.bleudev.modsync.client
 
 import com.bleudev.modsync.client.util.ModSyncer
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
@@ -38,22 +35,7 @@ class ModSyncClient : ClientModInitializer {
             if (!updating) {
                 if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty() && !already) {
                     updating = true
-                    ClientTempStorageManager.getInstance().serverAddress?.let { requireRestartAddresses.add(it) }
-                    mc.disconnect(GenericWaitingScreen.createWaitingWithoutButton(
-                        Component.translatable("modsync.update.wait.running"),
-                        Component.translatable("modsync.update.wait.running.wait")
-                    ), true)
-                    runBlocking {
-                        launch(Dispatchers.IO) {
-                            for ((id, version) in toUpdate) {
-                                ModSyncer.getInstance().sync(updateAddress, id, version)
-                            }
-                            toUpdate = listOf()
-                            updateAddress = ""
-                            shouldShowRestartScreen = true
-                            updating = false
-                        }
-                    }
+                    mc.disconnect(approveUpdateScreen(), true)
                 }
                 if (mc.gui.screen() is ConnectScreen && already) {
                     mc.showRestartScreen()
@@ -61,6 +43,44 @@ class ModSyncClient : ClientModInitializer {
             }
         }
     }
+
+    private fun approveUpdateScreen(): ConfirmScreen = ConfirmScreen(
+        {
+            println("EXECUTE $it")
+            if (it) {
+                val already = ClientTempStorageManager.getInstance().serverAddress in requireRestartAddresses
+                if (updateAddress.isNotEmpty() && toUpdate.isNotEmpty() && !already) {
+                    ClientTempStorageManager.getInstance().serverAddress?.let { a -> requireRestartAddresses.add(a) }
+                    Minecraft.getInstance().gui.setScreen(updatingScreen())
+                    Thread {
+                        for ((id, version) in toUpdate) {
+                            ModSyncer.getInstance().sync(updateAddress, id, version)
+                        }
+                        toUpdate = listOf()
+                        updateAddress = ""
+                        shouldShowRestartScreen = true
+                        updating = false
+                    }.start()
+                } else {
+                    Minecraft.getInstance().gui.setScreen(null)
+                }
+            } else {
+                toUpdate = listOf()
+                updateAddress = ""
+                updating = false
+                Minecraft.getInstance().gui.setScreen(null)
+            }
+        },
+        Component.literal("Approve updates"),
+        Component.literal("These mods will be updated"), // WIP
+        Component.literal("Approve"),
+        Component.literal("Do not")
+    )
+
+    private fun updatingScreen(): GenericWaitingScreen = GenericWaitingScreen.createWaitingWithoutButton(
+        Component.translatable("modsync.update.wait.running"),
+        Component.translatable("modsync.update.wait.running.wait")
+    )
 
     private fun Minecraft.showRestartScreen() {
         this.setScreenAndShow(ConfirmScreen(
