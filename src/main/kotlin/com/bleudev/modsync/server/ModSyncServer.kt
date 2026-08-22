@@ -8,8 +8,7 @@ import net.fabricmc.api.DedicatedServerModInitializer
 
 class ModSyncServer : DedicatedServerModInitializer {
     override fun onInitializeServer() {
-        val properties = ModSyncHttpServer.Properties.fromDefaultFile()
-        val server = ModSyncHttpServer(properties)
+        val server = ModSyncHttpServer()
         runBlocking {
             launch(Dispatchers.IO) {
                 server.run()

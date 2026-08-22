@@ -16,17 +16,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 
-class ModSyncHttpServer(private val properties: Properties) {
+class ModSyncHttpServer {
     internal fun run() {
-        val mods = arrayListOf<ModCachedData>()
-        for (id in properties.modIds) {
-            FabricLoader.getInstance().getModContainer(id).ifPresent {
-                mods.add(ModCachedData(id, it.metadata.version.friendlyString, it.origin.paths.first().toFile()))
-            }
-        }
+        val properties = Properties.fromDefaultFile()
         try {
             val server = HttpServer.create(InetSocketAddress(properties.port), 0)
-            server.createContext("/", RootHandler(mods.toList()))
+            server.createContext("/", RootHandler())
             server.setExecutor(null)
             server.start()
             LOGGER_GENERAL.info("Server was started!")
@@ -38,8 +33,20 @@ class ModSyncHttpServer(private val properties: Properties) {
         }
     }
 
-    class RootHandler(private val mods: List<ModCachedData>) : HttpHandler {
+    class RootHandler : HttpHandler {
+        private val mods: List<ModCachedData> get() {
+            val mods = arrayListOf<ModCachedData>()
+            for (id in Properties.fromDefaultFile().modIds) {
+                FabricLoader.getInstance().getModContainer(id).ifPresent {
+                    mods.add(ModCachedData(id, it.metadata.version.friendlyString, it.origin.paths.first().toFile()))
+                }
+            }
+            return mods.toList()
+        }
+
         override fun handle(t: HttpExchange) {
+            val mods = this.mods // Optimization
+
             val modId = t.requestURI.path.replace("\\?.*".toRegex(), "").substring(1)
             LOGGER_REQUEST.info("${t.requestMethod} /$modId")
             if (modId.isEmpty()) {
