@@ -20,7 +20,7 @@ class ClientHttpHelper(val fullAddress: String) {
     }
 
     private fun getString(endpoint: String): String = get(endpoint, HttpResponse.BodyHandlers.ofString()).body()
-    private fun getFile(endpoint: String, path: Path) = get(endpoint, HttpResponse.BodyHandlers.ofFile(path)).body()
+    private fun getFile(endpoint: String, path: Path): Path = get(endpoint, HttpResponse.BodyHandlers.ofFile(path)).body()
 
     internal fun metadata(): ModSyncHttpServer.ModSyncMetadata = JSON
         .decodeFromString<ModSyncHttpServer.ModSyncMetadata>(getString("/"))
