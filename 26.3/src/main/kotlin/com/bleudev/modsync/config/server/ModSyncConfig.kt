@@ -11,31 +11,28 @@ import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder
 class ModSyncConfig {
     @JvmField
     @SerialEntry(
-        comment = """
-            The port on which the file sharing server will run.
-            Must be free and open
-            Default: 8000
-        """
+        comment =
+            "The port on which the file sharing server will run.\n" +
+            "Must be free and open\n" +
+            "Default: 8000"
     )
     var port: Int = 8000
     @JvmField
     @SerialEntry(
-        comment = """
-            IDs of mods that need to be synced
-            Jar files of all specified mods must be present on the server in the mods folder.
-            Default: []
-        """
+        comment =
+            "IDs of mods that need to be synced\n" +
+            "Jar files of all specified mods must be present on the server in the \"mods\" folder.\n" +
+            "If the mod is client side drop it to \"client_mods\" folder.\n" +
+            "Default: []"
     )
     var mod_ids: List<String> = listOf()
     @JvmField
     @SerialEntry(
-        comment = """
-            Require the client to have a mod when joining the server
-            Default: false
-        """
+        comment =
+            "Require the client to have a mod when joining the server\n" +
+            "Default: false"
     )
     var require_modsync_to_join: Boolean = false
-
 
     companion object {
         private val HANDLER = ConfigClassHandler.createBuilder(ModSyncConfig::class.java)

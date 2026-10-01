@@ -2,6 +2,7 @@ package com.bleudev.modsync
 
 import com.bleudev.modsync.ModSync.Companion.JSON
 import com.bleudev.modsync.config.server.ModSyncConfig
+import com.bleudev.modsync.util.ModJarReader
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
@@ -34,18 +35,37 @@ class ModSyncHttpServer {
     }
 
     class RootHandler : HttpHandler {
-        private val mods: List<ModCachedData> get() {
+        private val clientMods = hashMapOf<String, ModCachedData>()
+        private fun discoverClientMods() {
+            val clientModsPath = FabricLoader.getInstance().gameDir.resolve(CLIENT_MODS_DIR)
+            if (!Files.exists(clientModsPath)) {
+                Files.createDirectories(clientModsPath)
+            }
+
+            for (path in Files.walk(clientModsPath)) {
+                // Read only jar files
+                if (path.fileName.endsWith(".jar")) {
+                    val reader = ModJarReader(path)
+                    reader.getModData()?.let { clientMods[it.id] = it }
+                }
+            }
+        }
+
+        private fun getModsData(): List<ModCachedData> {
             val mods = arrayListOf<ModCachedData>()
             for (id in ModSyncConfig.getInstance().mod_ids) {
-                FabricLoader.getInstance().getModContainer(id).ifPresent {
+                FabricLoader.getInstance().getModContainer(id).ifPresentOrElse( {
                     mods.add(ModCachedData(id, it.metadata.version.friendlyString, it.origin.paths.first().toFile()))
-                }
+                }, {
+                    clientMods[id]?.let { mods.add(it) }
+                })
             }
             return mods.toList()
         }
 
         override fun handle(t: HttpExchange) {
-            val mods = this.mods // Optimization
+            discoverClientMods()
+            val mods = getModsData() // Optimization
 
             val modId = t.requestURI.path.replace("\\?.*".toRegex(), "").substring(1)
             LOGGER_REQUEST.info("${t.requestMethod} /$modId")
