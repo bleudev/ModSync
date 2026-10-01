@@ -6,5 +6,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-include(":26.2")
-include(":26.3")
+include(
+    "26.2",
+    "26.3",
+)
