@@ -1,6 +1,7 @@
 package com.bleudev.modsync.client.util
 
 import com.bleudev.modsync.ModSyncHttpServer
+import kotlinx.atomicfu.AtomicRef
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.Version
@@ -26,14 +27,14 @@ class ModSyncer private constructor(private val modsDir: Path) {
         return ans.toList()
     }
 
-    fun sync(address: String, data: ModSyncHttpServer.ModSyncMetadata.ModMetadata): Boolean {
+    fun sync(address: String, data: ModSyncHttpServer.ModSyncMetadata.ModMetadata, progressAtomic: AtomicRef<Float>): Boolean {
         val h = ClientHttpHelper(address)
         FabricLoader.getInstance().getModContainer(data.id).ifPresent {
             for (path in it.origin.paths) {
                 Files.deleteIfExists(path)
             }
         }
-        h.mod(modsDir, data)
+        h.mod(modsDir, data, progressAtomic)
         return true
     }
 
