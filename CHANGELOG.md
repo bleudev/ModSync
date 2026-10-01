@@ -24,3 +24,6 @@
 
 - Fabric API `0.161.0+26.3` (bleudev [#8](https://github.com/bleudev/ModSync/pull/8))
 
+### Enhancements
+
+- Use JSON5 for config (bleudev [#10](https://github.com/bleudev/ModSync/pull/10))
