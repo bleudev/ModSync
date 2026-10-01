@@ -1,34 +1,34 @@
 package com.bleudev.modsync
 
 import com.bleudev.modsync.ModSync.Companion.JSON
+import com.bleudev.modsync.config.server.ModSyncConfig
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.fabricmc.loader.api.FabricLoader
 import java.io.File
-import java.io.IOException
 import java.net.BindException
 import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.exists
 
 class ModSyncHttpServer {
     internal fun run() {
-        val properties = Properties.fromDefaultFile()
+        val c = ModSyncConfig.getInstance()
         try {
-            val server = HttpServer.create(InetSocketAddress(properties.port), 0)
+            val server = HttpServer.create(InetSocketAddress(c.port), 0)
             server.createContext("/", RootHandler())
             server.setExecutor(null)
             server.start()
             LOGGER_GENERAL.info("Server was started!")
         }
-        catch (e: IOException) {
-            if (e !is BindException) { // Do not start server if running
-                throw RuntimeException(e)
+        catch (e: BindException) {
+            // Do not start server if running
+            // And print error
+            LOGGER_GENERAL.error("Requested port ${c.port} isn't free. Is this port for Minecraft server? Please change it to free and open port in configuration file and restart the server. For now ModSync isn't working.")
+            if (c.require_modsync_to_join) {
+                throw e // You have no choice - change port. Because no one could join the server now.
             }
         }
     }
@@ -36,7 +36,7 @@ class ModSyncHttpServer {
     class RootHandler : HttpHandler {
         private val mods: List<ModCachedData> get() {
             val mods = arrayListOf<ModCachedData>()
-            for (id in Properties.fromDefaultFile().modIds) {
+            for (id in ModSyncConfig.getInstance().mod_ids) {
                 FabricLoader.getInstance().getModContainer(id).ifPresent {
                     mods.add(ModCachedData(id, it.metadata.version.friendlyString, it.origin.paths.first().toFile()))
                 }
@@ -83,36 +83,5 @@ class ModSyncHttpServer {
     data class ModSyncMetadata(val mods: List<ModMetadata>) {
         @Serializable
         data class ModMetadata(val id: String, val version: String, val fileName: String)
-    }
-    @Serializable
-    data class Properties(
-        val port: Int = 8000,
-        @SerialName("mod_ids") val modIds: List<String> = listOf(),
-        @SerialName("require_modsync_to_join") val requireModsyncToJoin: Boolean = false
-    ) {
-        companion object {
-            @JvmStatic
-            fun fromFile(path: Path): Properties {
-                try {
-                    if (!path.exists()){
-                        Files.createDirectories(path.parent)
-                        Files.writeString(path, JSON.encodeToString(Properties()))
-                    }
-                } catch (e: Throwable) {
-                    LOGGER_GENERAL.error("Error while initialization properties file: $e")
-                }
-                val s1 = Files.readString(path)
-                val prop = JSON.decodeFromString<Properties>(s1)
-                val s2 = JSON.encodeToString(prop)
-                if (s1 != s2) {
-                    Files.writeString(path, s2)
-                }
-                return prop
-            }
-            @JvmStatic
-            fun fromDefaultFile(): Properties = fromFile(
-                FabricLoader.getInstance().configDir.resolve(MOD_ID).resolve("server.config.json")
-            )
-        }
     }
 }
