@@ -1,10 +1,10 @@
 @file:Suppress("unused")
 
 plugins {
-    kotlin("jvm") version "2.4.10"
-    kotlin("plugin.serialization") version "2.4.10"
-    id("fabric-loom") version "1.17.9" apply false
-    id("com.modrinth.minotaur") version "2.9.0" apply false
+    kotlin("jvm") version "2.4.20"
+    kotlin("plugin.serialization") version "2.4.20"
+    id("fabric-loom") version "1.18.1" apply false
+    id("com.modrinth.minotaur") version "2.10.0" apply false
     id("maven-publish")
 }
 
@@ -52,5 +52,5 @@ private fun String.snapshot(num: Int): McInformation = McInformation.snapshot(th
 private fun String.pre(num: Int): McInformation = McInformation.pre(this, num)
 private fun String.rc(num: Int): McInformation = McInformation.rc(this, num)
 
-prConfigure("26.2", "26.3", d().fabric("0.158.0+26.2").yacl("3.9.6+26.2-fabric").modmenu("20.0.1"))
-prConfigure("26.3".snapshot(9), "26.4", d().fabric("0.158.0+26.3").yacl("3.9.6+26.3-fabric").modmenu("21.0.0-alpha.1"))
+prConfigure("26.2", "26.3", d().fabric("0.158.0+26.2").yacl("3.9.7+26.2-fabric").modmenu("20.0.1"))
+prConfigure("26.3", "26.4", d().fabric("0.161.0+26.3").yacl("3.9.7+26.3-fabric").modmenu("21.0.0"))
