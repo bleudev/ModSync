@@ -23,7 +23,7 @@ A mod that automatically synchronizes Client and Server mods upon connection.
 For the mod to work, it must be installed on both the server and the client.
 - Open a different port than the one the server is running on.
 - Start the server
-- Specify this port in the resulting `config/modsync/server.config.json` (in the `port` field)
+- Specify this port in the resulting `config/modsync/server.json5` (in the `port` field)
 - Specify the IDs of the mods you want to sync (in the `mod_ids` field)
 - Configure additional settings (see below)
 

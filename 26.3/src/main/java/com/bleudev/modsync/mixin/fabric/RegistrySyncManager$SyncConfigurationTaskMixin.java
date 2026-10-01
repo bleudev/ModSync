@@ -1,6 +1,6 @@
 package com.bleudev.modsync.mixin.fabric;
 
-import com.bleudev.modsync.ModSyncHttpServer;
+import com.bleudev.modsync.config.server.ModSyncConfig;
 import com.bleudev.modsync.custom.ModSyncPackets;
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
@@ -26,10 +26,9 @@ public class RegistrySyncManager$SyncConfigurationTaskMixin {
 
     @Inject(method = "start", at = @At("HEAD"), cancellable = true)
     private void modSync(Consumer<Packet<?>> sender, CallbackInfo ci) {
-        ModSyncHttpServer.Properties properties = ModSyncHttpServer.Properties.fromDefaultFile();
         if (ServerConfigurationNetworking.canSend(handler, ModSyncPackets.MOD_SYNC_INFO)) {
-            sender.accept(ServerConfigurationNetworking.createClientboundPacket(new ModSyncInfo(properties.getPort())));
-        } else if (properties.getRequireModsyncToJoin()) {
+            sender.accept(ServerConfigurationNetworking.createClientboundPacket(new ModSyncInfo(ModSyncConfig.getInstance().port)));
+        } else if (ModSyncConfig.getInstance().require_modsync_to_join) {
             ci.cancel();
             handler.disconnect(Component.literal("ModSync is not installed!"));
         }
