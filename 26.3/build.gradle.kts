@@ -107,7 +107,7 @@ modrinth {
     token.set(System.getenv("MODRINTH_TOKEN"))
     projectId.set("modsyncer")
     versionNumber.set(project.version as String)
-    versionType.set("alpha")
+    versionType.set("beta")
     uploadFile.set(tasks.jar)
     additionalFiles {
         sourcesJar(tasks.kotlinSourcesJar)
@@ -115,7 +115,7 @@ modrinth {
     }
     changelog.set(project.property("changelog") as String)
     syncBodyFrom.set(project.property("readme") as String)
-    gameVersions.addAll("26.3-snapshot-9")
+    gameVersions.addAll("26.3")
     loaders.add("fabric")
     dependencies {
         required.version("fabric-api", project.property("fabric_version") as String)
