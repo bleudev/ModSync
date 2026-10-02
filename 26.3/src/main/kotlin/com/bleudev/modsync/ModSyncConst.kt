@@ -1,3 +1,3 @@
 package com.bleudev.modsync
 
-const val CLIENT_MODS_DIR = "client_mods"
+const val ADDITIONAL_MODS_DIR = "additional_mods"

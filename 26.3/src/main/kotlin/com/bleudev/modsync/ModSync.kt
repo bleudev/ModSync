@@ -21,12 +21,5 @@ class ModSync : ModInitializer {
 
     override fun onInitialize() {
         ModSyncPackets.initialize()
-        // For development
-//        val server = ModSyncHttpServer()
-//        runBlocking {
-//            launch(Dispatchers.IO) {
-//                server.run()
-//            }
-//        }
     }
 }

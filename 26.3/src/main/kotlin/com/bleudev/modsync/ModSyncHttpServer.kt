@@ -35,27 +35,27 @@ class ModSyncHttpServer {
     }
 
     class RootHandler : HttpHandler {
-        private val clientMods = hashMapOf<String, ModCachedData>()
+        private val additionalMods = hashMapOf<String, ModCachedData>()
         init {
-            discoverClientMods()
+            discoverAdditionalMods()
         }
-        private fun discoverClientMods() {
-            clientMods.clear()
+        private fun discoverAdditionalMods() {
+            additionalMods.clear()
 
-            val clientModsPath = FabricLoader.getInstance().gameDir.resolve(CLIENT_MODS_DIR)
-            if (!Files.exists(clientModsPath)) {
-                Files.createDirectories(clientModsPath)
+            val additionalModsPath = FabricLoader.getInstance().gameDir.resolve(ADDITIONAL_MODS_DIR)
+            if (!Files.exists(additionalModsPath)) {
+                Files.createDirectories(additionalModsPath)
             }
 
-            for (path in Files.walk(clientModsPath)) {
-                // Read only jar files
+            for (path in Files.walk(additionalModsPath)) {
                 val f = path.toFile()
+                // Read only jar files
                 if (f.isFile && f.name.endsWith(".jar")) {
-                    LOGGER_DISCOVER.info("Discovered client mod with path: $path")
+                    LOGGER_DISCOVER.info("Discovered additional mod with path: $path")
                     val reader = ModJarReader(path)
                     reader.getModData()?.let {
-                        LOGGER_DISCOVER.info("Successfully generated client mod metadata: $it")
-                        clientMods[it.id] = it
+                        LOGGER_DISCOVER.info("Successfully generated additional mod metadata: $it")
+                        additionalMods[it.id] = it
                     }
                 }
             }
@@ -67,14 +67,14 @@ class ModSyncHttpServer {
                 FabricLoader.getInstance().getModContainer(id).ifPresentOrElse( {
                     mods.add(ModCachedData(id, it.metadata.version.friendlyString, it.origin.paths.first().toFile()))
                 }, {
-                    clientMods[id]?.let { mods.add(it) }
+                    additionalMods[id]?.let { mods.add(it) }
                 })
             }
             return mods.toList()
         }
 
         override fun handle(t: HttpExchange) {
-            discoverClientMods()
+            discoverAdditionalMods()
             val mods = getModsData() // Optimization
 
             val modId = t.requestURI.path.replace("\\?.*".toRegex(), "").substring(1)
