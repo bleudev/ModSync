@@ -1,5 +1,9 @@
-package com.bleudev.modsync
+package com.bleudev.modsync.http.serverbound
 
+import com.bleudev.modsync.ADDITIONAL_MODS_DIR
+import com.bleudev.modsync.LOGGER_DISCOVER
+import com.bleudev.modsync.LOGGER_GENERAL
+import com.bleudev.modsync.LOGGER_REQUEST
 import com.bleudev.modsync.ModSync.Companion.JSON
 import com.bleudev.modsync.config.server.ModSyncConfig
 import com.bleudev.modsync.util.ModJarReader
@@ -36,9 +40,6 @@ class ModSyncHttpServer {
 
     class RootHandler : HttpHandler {
         private val additionalMods = hashMapOf<String, ModCachedData>()
-        init {
-            discoverAdditionalMods()
-        }
         private fun discoverAdditionalMods() {
             additionalMods.clear()
 

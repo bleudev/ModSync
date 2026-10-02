@@ -1,10 +1,10 @@
 package com.bleudev.modsync.client
 
-import com.bleudev.modsync.ModSyncHttpServer
 import com.bleudev.modsync.client.util.ModSyncer
 import com.bleudev.modsync.client.util.cancel
 import com.bleudev.modsync.client.util.closeScreen
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo
+import com.bleudev.modsync.http.serverbound.ModSyncHttpServer
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking

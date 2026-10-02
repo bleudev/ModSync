@@ -1,7 +1,7 @@
-package com.bleudev.modsync.client.util
+package com.bleudev.modsync.http.clientbound
 
 import com.bleudev.modsync.ModSync.Companion.JSON
-import com.bleudev.modsync.ModSyncHttpServer
+import com.bleudev.modsync.http.serverbound.ModSyncHttpServer
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest

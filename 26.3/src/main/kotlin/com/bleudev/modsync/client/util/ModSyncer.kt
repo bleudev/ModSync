@@ -1,6 +1,7 @@
 package com.bleudev.modsync.client.util
 
-import com.bleudev.modsync.ModSyncHttpServer
+import com.bleudev.modsync.http.clientbound.ClientHttpHelper
+import com.bleudev.modsync.http.serverbound.ModSyncHttpServer
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.Version

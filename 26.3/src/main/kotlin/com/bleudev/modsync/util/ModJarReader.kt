@@ -1,6 +1,6 @@
 package com.bleudev.modsync.util
 
-import com.bleudev.modsync.ModSyncHttpServer
+import com.bleudev.modsync.http.serverbound.ModSyncHttpServer
 import net.fabricmc.loader.impl.lib.gson.JsonReader
 import net.fabricmc.loader.impl.lib.gson.JsonToken
 import net.fabricmc.loader.impl.metadata.ParseMetadataException
