@@ -1,7 +1,7 @@
-package com.bleudev.modsync.client.util
+package com.bleudev.modsync.http.clientbound
 
 import com.bleudev.modsync.ModSync.Companion.JSON
-import com.bleudev.modsync.ModSyncHttpServer
+import com.bleudev.modsync.http.serverbound.serialization.ModSyncMetadata
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -22,8 +22,8 @@ class ClientHttpHelper(val fullAddress: String) {
     private fun getString(endpoint: String): String = get(endpoint, HttpResponse.BodyHandlers.ofString()).body()
     private fun getFile(endpoint: String, path: Path) = get(endpoint, HttpResponse.BodyHandlers.ofFile(path)).body()
 
-    internal fun metadata(): ModSyncHttpServer.ModSyncMetadata = JSON
-        .decodeFromString<ModSyncHttpServer.ModSyncMetadata>(getString("/"))
-    internal fun mod(modsDir: Path, data: ModSyncHttpServer.ModSyncMetadata.ModMetadata) =
+    internal fun metadata(): ModSyncMetadata = JSON
+        .decodeFromString<ModSyncMetadata>(getString("/"))
+    internal fun mod(modsDir: Path, data: ModSyncMetadata.ModMetadata) =
         getFile("/${data.id}", modsDir.resolve(data.fileName))
 }

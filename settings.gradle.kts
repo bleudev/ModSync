@@ -7,6 +7,5 @@ pluginManagement {
     }
 }
 include(
-    "26.2",
     "26.3",
 )

@@ -1,6 +1,6 @@
 package com.bleudev.modsync.server
 
-import com.bleudev.modsync.ModSyncHttpServer
+import com.bleudev.modsync.http.serverbound.ModSyncHttpServer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
