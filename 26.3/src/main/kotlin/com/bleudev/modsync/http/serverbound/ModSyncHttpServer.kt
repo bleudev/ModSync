@@ -6,11 +6,11 @@ import com.bleudev.modsync.LOGGER_GENERAL
 import com.bleudev.modsync.LOGGER_REQUEST
 import com.bleudev.modsync.ModSync.Companion.JSON
 import com.bleudev.modsync.config.server.ModSyncConfig
+import com.bleudev.modsync.http.serverbound.serialization.ModSyncMetadata
 import com.bleudev.modsync.util.ModJarReader
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
-import kotlinx.serialization.Serializable
 import net.fabricmc.loader.api.FabricLoader
 import java.io.File
 import java.net.BindException
@@ -81,21 +81,14 @@ class ModSyncHttpServer {
             val modId = t.requestURI.path.replace("\\?.*".toRegex(), "").substring(1)
             LOGGER_REQUEST.info("${t.requestMethod} /$modId")
             if (modId.isEmpty()) {
-                t.textRespond(JSON.encodeToString(
-                    ModSyncMetadata(mods.map { ModSyncMetadata.ModMetadata(it.id, it.version, it.file.name) }),
-                ), 200, "application/json")
+                t.jsonRespond(ModSyncMetadata.from(mods), 200)
             } else {
                 val file = mods.find { it.id == modId }?.file
                 if (file == null || !file.exists()) {
-                    t.textRespond("Not found", 404)
+                    t.textRespond("404 Not found", 404)
                 }
                 else {
-                    t.responseHeaders["Content-Type"] = "application/java-archive"
-                    t.responseHeaders["Content-Disposition"] = "attachment; filename=\"${file.name}\""
-                    t.sendResponseHeaders(200, file.length())
-                    t.responseBody.use { os ->
-                        Files.copy(file.toPath(), os)
-                    }
+                    t.fileRespond(file, 200)
                 }
             }
         }
@@ -106,13 +99,20 @@ class ModSyncHttpServer {
             sendResponseHeaders(code, responseBytes.size.toLong())
             responseBody.use { it.write(responseBytes) }
         }
+
+        private inline fun <reified T> HttpExchange.jsonRespond(obj: T, code: Int) {
+            textRespond(JSON.encodeToString(obj), code, "application/json")
+        }
+
+        private fun HttpExchange.fileRespond(file: File, code: Int, contentType: String = "application/java-archive") {
+            responseHeaders["Content-Type"] = contentType
+            responseHeaders["Content-Disposition"] = "attachment; filename=\"${file.name}\""
+            sendResponseHeaders(code, file.length())
+            responseBody.use { os ->
+                Files.copy(file.toPath(), os)
+            }
+        }
     }
 
     data class ModCachedData(val id: String, val version: String, val file: File)
-
-    @Serializable
-    data class ModSyncMetadata(val mods: List<ModMetadata>) {
-        @Serializable
-        data class ModMetadata(val id: String, val version: String, val fileName: String)
-    }
 }

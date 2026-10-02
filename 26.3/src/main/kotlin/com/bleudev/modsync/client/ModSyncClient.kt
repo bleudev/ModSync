@@ -4,7 +4,7 @@ import com.bleudev.modsync.client.util.ModSyncer
 import com.bleudev.modsync.client.util.cancel
 import com.bleudev.modsync.client.util.closeScreen
 import com.bleudev.modsync.custom.packet.payload.ModSyncInfo
-import com.bleudev.modsync.http.serverbound.ModSyncHttpServer
+import com.bleudev.modsync.http.serverbound.serialization.ModSyncMetadata
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
@@ -20,7 +20,7 @@ class ModSyncClient : ClientModInitializer {
     private val requireRestartAddresses = arrayListOf<String>()
 
     private var updateAddress: String = ""
-    private var toUpdate: List<ModSyncHttpServer.ModSyncMetadata.ModMetadata> = listOf()
+    private var toUpdate: List<ModSyncMetadata.ModMetadata> = listOf()
     private var updating: Boolean = false
 
     override fun onInitializeClient() {

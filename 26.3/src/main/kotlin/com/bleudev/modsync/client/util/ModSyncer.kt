@@ -1,7 +1,7 @@
 package com.bleudev.modsync.client.util
 
 import com.bleudev.modsync.http.clientbound.ClientHttpHelper
-import com.bleudev.modsync.http.serverbound.ModSyncHttpServer
+import com.bleudev.modsync.http.serverbound.serialization.ModSyncMetadata
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.Version
@@ -11,10 +11,10 @@ import java.nio.file.Path
 import kotlin.jvm.optionals.getOrNull
 
 class ModSyncer private constructor(private val modsDir: Path) {
-    fun fetch(address: String): List<ModSyncHttpServer.ModSyncMetadata.ModMetadata> {
+    fun fetch(address: String): List<ModSyncMetadata.ModMetadata> {
         val h = ClientHttpHelper(address)
         val mods = h.metadata().mods
-        val ans = arrayListOf<ModSyncHttpServer.ModSyncMetadata.ModMetadata>()
+        val ans = arrayListOf<ModSyncMetadata.ModMetadata>()
         for (data in mods) {
             val current = FabricLoader.getInstance().getModContainer(data.id)
                 .map(ModContainer::getMetadata)
@@ -27,7 +27,7 @@ class ModSyncer private constructor(private val modsDir: Path) {
         return ans.toList()
     }
 
-    fun sync(address: String, data: ModSyncHttpServer.ModSyncMetadata.ModMetadata): Boolean {
+    fun sync(address: String, data: ModSyncMetadata.ModMetadata): Boolean {
         val h = ClientHttpHelper(address)
         FabricLoader.getInstance().getModContainer(data.id).ifPresent {
             for (path in it.origin.paths) {
