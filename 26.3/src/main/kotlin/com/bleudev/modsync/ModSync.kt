@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 
 
 val LOGGER_GENERAL: Logger = LoggerFactory.getLogger("ModSync")
+val LOGGER_DISCOVER: Logger = LoggerFactory.getLogger("ModSync/discover")
 val LOGGER_REQUEST: Logger = LoggerFactory.getLogger("ModSync/request")
 const val MOD_ID = "modsync"
 fun resolveIdentifier(path: String) : Identifier = Identifier.fromNamespaceAndPath(MOD_ID, path)
@@ -20,5 +21,12 @@ class ModSync : ModInitializer {
 
     override fun onInitialize() {
         ModSyncPackets.initialize()
+        // For development
+//        val server = ModSyncHttpServer()
+//        runBlocking {
+//            launch(Dispatchers.IO) {
+//                server.run()
+//            }
+//        }
     }
 }

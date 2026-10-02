@@ -36,7 +36,12 @@ class ModSyncHttpServer {
 
     class RootHandler : HttpHandler {
         private val clientMods = hashMapOf<String, ModCachedData>()
+        init {
+            discoverClientMods()
+        }
         private fun discoverClientMods() {
+            clientMods.clear()
+
             val clientModsPath = FabricLoader.getInstance().gameDir.resolve(CLIENT_MODS_DIR)
             if (!Files.exists(clientModsPath)) {
                 Files.createDirectories(clientModsPath)
@@ -44,9 +49,14 @@ class ModSyncHttpServer {
 
             for (path in Files.walk(clientModsPath)) {
                 // Read only jar files
-                if (path.fileName.endsWith(".jar")) {
+                val f = path.toFile()
+                if (f.isFile && f.name.endsWith(".jar")) {
+                    LOGGER_DISCOVER.info("Discovered client mod with path: $path")
                     val reader = ModJarReader(path)
-                    reader.getModData()?.let { clientMods[it.id] = it }
+                    reader.getModData()?.let {
+                        LOGGER_DISCOVER.info("Successfully generated client mod metadata: $it")
+                        clientMods[it.id] = it
+                    }
                 }
             }
         }
