@@ -9,6 +9,9 @@ class ClientTempStorageManager {
         return "$h:$p"
     }
 
+    var downloadReadBytes: Long = 0
+    var downloadTotalBytes: Long? = null
+
     companion object {
         private var instance: ClientTempStorageManager? = null
 

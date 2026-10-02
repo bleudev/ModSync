@@ -1,5 +1,6 @@
 package com.bleudev.modsync.client.util
 
+import com.bleudev.modsync.client.ClientTempStorageManager
 import com.bleudev.modsync.http.clientbound.ClientHttpHelper
 import com.bleudev.modsync.http.serverbound.serialization.ModSyncMetadata
 import net.fabricmc.loader.api.FabricLoader
@@ -34,7 +35,10 @@ class ModSyncer private constructor(private val modsDir: Path) {
                 Files.deleteIfExists(path)
             }
         }
-        h.mod(modsDir, data)
+        h.mod(modsDir, data) { downloaded, total ->
+            ClientTempStorageManager.getInstance().downloadReadBytes = downloaded
+            ClientTempStorageManager.getInstance().downloadTotalBytes = total
+        }
         return true
     }
 

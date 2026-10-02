@@ -1,5 +1,6 @@
 package com.bleudev.modsync.client
 
+import com.bleudev.modsync.client.custom.gui.screens.ModsUpdatingScreen
 import com.bleudev.modsync.client.util.ModSyncer
 import com.bleudev.modsync.client.util.cancel
 import com.bleudev.modsync.client.util.closeScreen
@@ -13,7 +14,6 @@ import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ConfirmScreen
 import net.minecraft.client.gui.screens.ConnectScreen
-import net.minecraft.client.gui.screens.GenericWaitingScreen
 import net.minecraft.network.chat.Component
 
 class ModSyncClient : ClientModInitializer {
@@ -95,10 +95,7 @@ class ModSyncClient : ClientModInitializer {
         )
     }
 
-    private fun updatingScreen(): GenericWaitingScreen = GenericWaitingScreen.createWaitingWithoutButton(
-        Component.translatable("modsync.update.wait.running"),
-        Component.translatable("modsync.update.wait.running.wait")
-    )
+    private fun updatingScreen() = ModsUpdatingScreen()
 
     private fun Minecraft.showRestartScreen() {
         this.setScreenAndShow(ConfirmScreen(
