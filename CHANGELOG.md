@@ -26,5 +26,6 @@
 
 ### Enhancements
 
+- Download mods with stream and show progress (bleudev [#13](https://github.com/bleudev/ModSync/pull/13))
 - Additional mods syncing (bleudev [#11](https://github.com/bleudev/ModSync/pull/11))
 - Use JSON5 for config (bleudev [#10](https://github.com/bleudev/ModSync/pull/10))
