@@ -71,7 +71,9 @@ class ModSyncClient : ClientModInitializer {
                         mc.gui.setScreen(updatingScreen())
                         Thread {
                             for (data in toUpdate) {
-                                ModSyncer.getInstance().sync(updateAddress, data)
+                                if (!ModSyncer.getInstance().sync(updateAddress, data)) {
+                                    break
+                                }
                             }
                             toUpdate = listOf()
                             updateAddress = ""

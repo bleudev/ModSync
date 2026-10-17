@@ -4,16 +4,18 @@ import com.bleudev.modsync.ModSync.Companion.JSON
 import com.bleudev.modsync.http.serverbound.serialization.ModSyncMetadata
 import java.net.URI
 import java.net.http.HttpClient
+import java.net.http.HttpConnectTimeoutException
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Duration
 
 class ClientHttpHelper(val fullAddress: String) {
     typealias ProgressFunction = (downloaded: Long, total: Long?) -> Unit
 
     private fun <T> get(endpoint: String, bodyHandler: HttpResponse.BodyHandler<T>, additionalAction: (HttpResponse<T>) -> Unit = {}): HttpResponse<T> {
-        HttpClient.newHttpClient().use { client ->
+        HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build().use { client ->
             val request = HttpRequest.newBuilder()
                 .uri(URI.create("$fullAddress$endpoint"))
                 .GET()
@@ -50,8 +52,10 @@ class ClientHttpHelper(val fullAddress: String) {
         }
     }
 
+    @Throws(HttpConnectTimeoutException::class)
     internal fun metadata(): ModSyncMetadata = JSON
         .decodeFromString<ModSyncMetadata>(getString("/"))
+    @Throws(HttpConnectTimeoutException::class)
     internal fun mod(modsDir: Path, data: ModSyncMetadata.ModMetadata, onProgress: ProgressFunction = { _, _ -> }) {
         getFile("/${data.id}", modsDir.resolve(data.fileName), onProgress)
     }
