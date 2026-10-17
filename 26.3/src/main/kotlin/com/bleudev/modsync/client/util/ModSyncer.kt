@@ -1,5 +1,6 @@
 package com.bleudev.modsync.client.util
 
+import com.bleudev.modsync.LOGGER_GENERAL
 import com.bleudev.modsync.client.ClientTempStorageManager
 import com.bleudev.modsync.http.clientbound.ClientHttpHelper
 import com.bleudev.modsync.http.serverbound.serialization.ModSyncMetadata
@@ -11,6 +12,7 @@ import net.fabricmc.loader.api.metadata.ModMetadata
 import java.net.http.HttpConnectTimeoutException
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 class ModSyncer private constructor(private val modsDir: Path) {
@@ -35,6 +37,7 @@ class ModSyncer private constructor(private val modsDir: Path) {
     }
 
     fun sync(address: String, data: ModSyncMetadata.ModMetadata): Boolean {
+        val ff = FabricLoader.getInstance().getModContainer(data.id).map { it.origin.paths }.getOrDefault(listOf())
         val h = ClientHttpHelper(address)
         try {
             h.mod(modsDir, data) { downloaded, total ->
@@ -44,14 +47,14 @@ class ModSyncer private constructor(private val modsDir: Path) {
         } catch (_: HttpConnectTimeoutException) {
             return false
         }
-        try {
-            FabricLoader.getInstance().getModContainer(data.id).ifPresent {
-                for (path in it.origin.paths) {
-                    Files.deleteIfExists(path)
-                }
+        for (f in ff) {
+            try {
+                Files.deleteIfExists(f)
             }
-        } catch (_: IOException) { // Some error with deleting
-            return true
+            catch (_: IOException) { // Some error with deleting
+                LOGGER_GENERAL.warn("Mod JAR File deletion failed for some reason: $f")
+                return true
+            }
         }
         return true
     }
