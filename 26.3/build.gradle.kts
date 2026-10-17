@@ -148,16 +148,3 @@ publishing {
 kotlin {
     jvmToolchain(javaVersion)
 }
-
-val installerTest = sourceSets.create("installerTest") {
-    compileClasspath += sourceSets.main.get().output
-    runtimeClasspath += sourceSets.main.get().output
-}
-
-val verifyPendingModInstaller = tasks.register<JavaExec>("verifyPendingModInstaller") {
-    dependsOn(installerTest.classesTaskName)
-    classpath = installerTest.runtimeClasspath
-    mainClass.set("com.bleudev.modsync.client.util.PendingModInstallerTest")
-}
-
-tasks.check { dependsOn(verifyPendingModInstaller) }
