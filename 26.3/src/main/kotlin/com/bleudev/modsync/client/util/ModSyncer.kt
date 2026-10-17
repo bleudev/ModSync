@@ -52,11 +52,67 @@ class ModSyncer private constructor(private val modsDir: Path) {
                 Files.deleteIfExists(f)
             }
             catch (_: IOException) { // Some error with deleting
-                LOGGER_GENERAL.warn("Mod JAR File deletion failed for some reason: $f")
+                try {
+                    val os = System.getProperty("os.name")
+                    // Windows support
+                    if (os.lowercase().startsWith("windows")) {
+                        winScheduleDelete(f)
+                    }
+                    // Other systems support
+                    else {
+                        f.toFile().deleteOnExit()
+                        LOGGER_GENERAL.warn("Could not delete mod JAR; scheduled deletion on JVM exit: $f")
+                    }
+                } catch (e: Exception) {
+                    LOGGER_GENERAL.error(
+                        "Failed to schedule deletion of mod JAR: $f",
+                        e
+                    )
+                }
                 return true
             }
         }
         return true
+    }
+
+    private fun winScheduleDelete(file: Path) {
+        val pid = ProcessHandle.current().pid()
+        val path = file.toAbsolutePath().toString().replace("'", "''")
+        val script = $$"""
+        $targetPid = $$pid
+        $targetPath = '$$path'
+        while (Get-Process -Id $targetPid `
+                -ErrorAction SilentlyContinue) {
+            Start-Sleep -Milliseconds 500
+        }
+        for ($i = 0; $i -lt 40; $i++) {
+            try {
+                if (-not (Test-Path -LiteralPath $targetPath)) {
+                    exit 0
+                }
+                Remove-Item -LiteralPath $targetPath `
+                    -Force -ErrorAction Stop
+                exit 0
+            } catch {
+                Start-Sleep -Milliseconds 500
+            }
+        }
+        exit 1
+        """.trimIndent()
+
+        ProcessBuilder(
+            "powershell.exe",
+            "-NoProfile",
+            "-NonInteractive",
+            "-WindowStyle", "Hidden",
+            "-Command", script
+        )
+            .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+            .redirectError(ProcessBuilder.Redirect.DISCARD)
+            .start()
+        LOGGER_GENERAL.info(
+            "Could not delete mod JAR; scheduled mod JAR deletion after Minecraft exits: $file"
+        )
     }
 
     companion object {
