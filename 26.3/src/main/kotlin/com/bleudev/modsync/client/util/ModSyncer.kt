@@ -39,14 +39,18 @@ class ModSyncer private constructor(private val modsDir: Path) {
     fun sync(address: String, data: ModSyncMetadata.ModMetadata): Boolean {
         val ff = FabricLoader.getInstance().getModContainer(data.id).map { it.origin.paths }.getOrDefault(listOf())
         val h = ClientHttpHelper(address)
+
+        ClientTempStorageManager.getInstance().downloadModId = data.id
         try {
             h.mod(modsDir, data) { downloaded, total ->
                 ClientTempStorageManager.getInstance().downloadReadBytes = downloaded
                 ClientTempStorageManager.getInstance().downloadTotalBytes = total
             }
         } catch (_: HttpConnectTimeoutException) {
+            ClientTempStorageManager.getInstance().downloadModId = null
             return false
         }
+        ClientTempStorageManager.getInstance().downloadModId = null
         for (f in ff) {
             try {
                 Files.deleteIfExists(f)
@@ -69,7 +73,6 @@ class ModSyncer private constructor(private val modsDir: Path) {
                         e
                     )
                 }
-                return true
             }
         }
         return true
