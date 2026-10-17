@@ -103,7 +103,7 @@ class ModSyncClient : ClientModInitializer {
         this.setScreenAndShow(ConfirmScreen(
             {
                 if (it) {
-                    this.close()
+                    this.stop()
                 } else {
                     this.gui.setScreen(null)
                 }
