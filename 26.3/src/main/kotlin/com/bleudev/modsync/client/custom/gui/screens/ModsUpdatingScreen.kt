@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.GenericWaitingScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
 import net.minecraft.util.ARGB
+import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
 class ModsUpdatingScreen : GenericWaitingScreen(
@@ -21,11 +22,24 @@ class ModsUpdatingScreen : GenericWaitingScreen(
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, a: Float) {
         super.extractRenderState(graphics, mouseX, mouseY, a)
         val t = ClientTempStorageManager.getInstance()
-        val tr = t.downloadReadBytes
-        val tt = t.downloadTotalBytes
-        if (tt != null) {
-            val c = Component.literal("$tr / $tt (${(tr.toFloat() / tt * 100).roundToInt()}%)")
-            graphics.centeredText(this.minecraft.font, c, this.width / 2, 142, ARGB.color(1f, TextColor.GREEN.value))
+        val id = t.downloadModId
+        val read = t.downloadReadBytes
+        val total = t.downloadTotalBytes
+        var y = 142
+
+        val col = ARGB.opaque(TextColor.GREEN.value)
+        if (id != null) {
+            val c = Component.translatable("modsync.update.wait.running.mod", id)
+            graphics.centeredText(this.minecraft.font, c, this.width / 2, y, col)
+            y += this.minecraft.font.lineHeight + 1
         }
+        if (total != null) {
+            val c = Component.literal("${formatInt(read)} / ${formatInt(total)} (${(read.toFloat() / total * 100).roundToInt()}%)")
+            graphics.centeredText(this.minecraft.font, c, this.width / 2, y, col)
+        }
+    }
+
+    private fun formatInt(i: Long): String {
+        return DecimalFormat.getNumberInstance().format(i)
     }
 }

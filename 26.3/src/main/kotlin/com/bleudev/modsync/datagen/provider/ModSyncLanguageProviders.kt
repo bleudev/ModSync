@@ -17,6 +17,7 @@ class ModSyncDefaultLanguageProvider(
         builder.add("modsync.update.confirm.yes", "Confirm, join the server")
         builder.add("modsync.update.confirm.no", "No, do not join the server")
         builder.add("modsync.update.wait.running", "Updating mods")
+        builder.add("modsync.update.wait.running.mod", "Updating %s")
         builder.add("modsync.update.wait.running.wait", "Please wait")
         builder.add("modsync.update.end.restart", "Restart Minecraft")
         builder.add("modsync.update.end.restart.more", "To join this server, you must restart game")
@@ -37,9 +38,31 @@ class ModSyncRuLanguageProvider(
         builder.add("modsync.update.confirm.yes", "Подтвердить, зайти на сервер")
         builder.add("modsync.update.confirm.no", "Нет, не заходить на сервер")
         builder.add("modsync.update.wait.running", "Обновление модов")
+        builder.add("modsync.update.wait.running.mod", "Обновляем %s")
         builder.add("modsync.update.wait.running.wait", "Пожалуйста подождите")
         builder.add("modsync.update.end.restart", "Перезапустите Minecraft")
         builder.add("modsync.update.end.restart.more", "Чтобы присоединиться к этому серверу необходимо перезапустить игру")
+        builder.add("modsync.update.end.restart.yes", "Перезапустить")
+        builder.add("modsync.update.end.restart.no", "Позже")
+    }
+}
+
+class ModSyncRprLanguageProvider(
+    packOutput: FabricPackOutput, registryLookup: CompletableFuture<HolderLookup.Provider>
+) : FabricLanguageProvider(packOutput, "rpr", registryLookup) {
+    override fun generateTranslations(
+        registryLookup: HolderLookup.Provider,
+        builder: TranslationBuilder
+    ) {
+        builder.add("modsync.update.confirm.title", "Подтвердите обновленіе")
+        builder.add("modsync.update.confirm.message", "Сіи дополненія будутъ обновлены\nЖелаете ли вы установить ихъ?")
+        builder.add("modsync.update.confirm.yes", "Подтвердить и войти на салонъ")
+        builder.add("modsync.update.confirm.no", "Нѣтъ, не входить на салонъ")
+        builder.add("modsync.update.wait.running", "Обновленіе дополненій")
+        builder.add("modsync.update.wait.running.mod", "Обновляется %s")
+        builder.add("modsync.update.wait.running.wait", "Пожалуйста, подождите")
+        builder.add("modsync.update.end.restart", "Перезапустите Minecraft")
+        builder.add("modsync.update.end.restart.more", "Чтобы присоединиться къ сему салону, необходимо перезапустить игру")
         builder.add("modsync.update.end.restart.yes", "Перезапустить")
         builder.add("modsync.update.end.restart.no", "Позже")
     }

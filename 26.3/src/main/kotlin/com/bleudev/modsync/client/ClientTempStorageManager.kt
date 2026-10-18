@@ -9,6 +9,7 @@ class ClientTempStorageManager {
         return "$h:$p"
     }
 
+    var downloadModId: String? = null
     var downloadReadBytes: Long = 0
     var downloadTotalBytes: Long? = null
 
