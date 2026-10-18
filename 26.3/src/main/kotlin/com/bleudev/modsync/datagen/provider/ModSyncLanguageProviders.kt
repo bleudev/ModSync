@@ -46,3 +46,24 @@ class ModSyncRuLanguageProvider(
         builder.add("modsync.update.end.restart.no", "Позже")
     }
 }
+
+class ModSyncRprLanguageProvider(
+    packOutput: FabricPackOutput, registryLookup: CompletableFuture<HolderLookup.Provider>
+) : FabricLanguageProvider(packOutput, "rpr", registryLookup) {
+    override fun generateTranslations(
+        registryLookup: HolderLookup.Provider,
+        builder: TranslationBuilder
+    ) {
+        builder.add("modsync.update.confirm.title", "Подтвердите обновленіе")
+        builder.add("modsync.update.confirm.message", "Сіи дополненія будутъ обновлены\nЖелаете ли вы установить ихъ?")
+        builder.add("modsync.update.confirm.yes", "Подтвердить и войти на салонъ")
+        builder.add("modsync.update.confirm.no", "Нѣтъ, не входить на салонъ")
+        builder.add("modsync.update.wait.running", "Обновленіе дополненій")
+        builder.add("modsync.update.wait.running.mod", "Обновляется %s")
+        builder.add("modsync.update.wait.running.wait", "Пожалуйста, подождите")
+        builder.add("modsync.update.end.restart", "Перезапустите Minecraft")
+        builder.add("modsync.update.end.restart.more", "Чтобы присоединиться къ сему салону, необходимо перезапустить игру")
+        builder.add("modsync.update.end.restart.yes", "Перезапустить")
+        builder.add("modsync.update.end.restart.no", "Позже")
+    }
+}
