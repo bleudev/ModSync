@@ -1,8 +1,8 @@
 # ModSync
 
 [![Downloads](https://img.shields.io/modrinth/dt/modsyncer)](https://modrinth.com/mod/modsyncer)
-[![Latest version](https://img.shields.io/badge/Latest_version-0.2-orange)](https://modrinth.com/mod/modsyncer/versions)
-[![Supported Minecraft versions](https://img.shields.io/badge/Supported_Minecraft_Versions-26.2--26.3-green)](https://modrinth.com/mod/modsyncer)
+[![Latest version](https://img.shields.io/badge/Latest_version-0.3.0-orange)](https://modrinth.com/mod/modsyncer/versions)
+[![Supported Minecraft versions](https://img.shields.io/badge/Supported_Minecraft_Versions-26.3--26.3-green)](https://modrinth.com/mod/modsyncer)
 [![Environment](https://img.shields.io/badge/Environment-Client%2BServer-blue)](https://modrinth.com/mod/modsyncer)
 [![GitHub contributors](https://img.shields.io/github/contributors/bleudev/ModSync)](https://github.com/bleudev/ModSync/graphs/contributors)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/w/bleudev/ModSync)](https://github.com/bleudev/ModSync/activity)
@@ -15,7 +15,7 @@ A mod that automatically synchronizes Client and Server mods upon connection.
 ### Supported Minecraft versions and minimal requirements
 | Minecraft version | Max Mod Sync version | Fabric Language Kotlin    | Fabric API  | YACL      | Fabric Loader |
 |-------------------|----------------------|:--------------------------|:------------|:----------|---------------|
-| 26.3              | ✅ 0.2               | \>= 1.14.1+kotlin.2.4.20  | \>= 0.161.0 | \>= 3.9.7 | \>= 0.19.5    |
+| 26.3              | ✅ 0.3.0             | \>= 1.14.1+kotlin.2.4.20  | \>= 0.161.0 | \>= 3.9.7 | \>= 0.19.5    |
 | 26.2              | ❌️ 0.1               | \>= 1.13.13+kotlin.2.4.10 | \>= 0.158.0 | \>= 3.9.6 | \>= 0.19.3    |
 
 ## Configuration
